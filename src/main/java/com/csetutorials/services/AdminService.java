@@ -83,7 +83,7 @@ public class AdminService {
 			.selectFrom(tableAdmin)
 			.where(tableAdmin.userId.eq(tableOwnerId)
 				.and(tableAdmin.tableId.eq(tableId))
-				.and(tableAdmin.isSuperAdmin.eq(true)))
+				.and(tableAdmin.isOwner.eq(true)))
 			.fetchFirst() != null;
 	}
 
@@ -91,7 +91,7 @@ public class AdminService {
 		return queryFactory
 			.selectFrom(tableAdmin)
 			.where(tableAdmin.tableId.eq(tableId)
-				.and(tableAdmin.isSuperAdmin.eq(false)))
+				.and(tableAdmin.isOwner.eq(false)))
 			.limit(1)
 			.fetchFirst() != null;
 	}
