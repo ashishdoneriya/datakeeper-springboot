@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<title>Record Keeper</title>
+		<meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0" name="viewport" />
+		<meta content="yes" name="apple-mobile-web-app-capable" />
+		<meta content="black" name="apple-mobile-web-app-status-bar-style" />
+		<meta content="telephone=no" name="format-detection" />
+		<link rel="icon" type="image/png" href="/icons/favico.png" />
+		<link rel="stylesheet" href="/css/theme/index.css">
+		<link rel="stylesheet" href="/fonts/Roboto/roboto.css">
+		<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+		<script src="/js/vue.min.js"></script>
+		<script src="/js/vuex.min.js"></script>
+		<script src="/js/vue-router.min.js"></script>
+		<script src="/js/httpVueLoader.js"></script>
+		<script src="/js/elementui.min.js"></script>
+		<script src="/js/element.en.js"></script>
+		<script src="/js/axios.min.js"></script>
+		<script src="/js/cookies.min.js"></script>
+		<style>
+			* {
+				font-family: 'Roboto', sans-serif;
+			}
+
+			a {
+				text-decoration: none;
+				color: #009688;
+			}
+
+			.text-center {
+				text-align: center;
+			}
+
+			.right-align {
+				text-align: right;
+			}
+
+			a,
+			i {
+				cursor: pointer;
+			}
+
+			.el-table, .el-table thead, .el-input-group__append, .el-input-group__prepend, .el-pagination span, .el-input__inner, .el-tag--info, .el-tag--info .el-tag__close{
+				color : #222;
+			}
+
+
+		</style>
+	</head>
+
+	<body>
+		<div id="vapp">
+			<router-view></router-view>
+		</div>
+		<script>
+			Vue.use(Vuex);
+			ELEMENT.locale(ELEMENT.lang.en);
+			new Vue({
+				el: '#vapp',
+				store: new Vuex.Store({
+					state: {
+						list: {
+							personalTables: {
+								label: 'Personal Tables',
+								list: []
+							},
+							otherTables: {
+								label: 'Other Tables',
+								list: []
+							}
+						},
+						loggedIn: undefined
+					},
+					getters: {
+						isLoggedIn: (state) => {
+							if (!state.loggedIn) {
+								state.loggedIn = Cookies.get("email") ? true : false;
+							}
+							return state.loggedIn;
+						}
+					},
+					mutations: {
+						update() {
+							axios.get('/apis/tables-list.php')
+								.then(result => {
+									this.state.list = result.data;
+								}).catch(error => {
+									console.error(error);
+								});
+						},
+						setLoggedIn(state, value) {
+							state.isLoggedIn = value;
+						}
+					}
+				}),
+				router: new VueRouter({
+					mode: 'history',
+					routes: [{
+						path: '/',
+						component: httpVueLoader('/components/signin.html'),
+						alias: '/signin'
+					}, {
+						path: '/signup',
+						component: httpVueLoader('/components/signup.html')
+					}, {
+						path: '/user',
+						component: httpVueLoader('/components/user.html'),
+						children: [
+							{
+								path: 'dashboard',
+								alias: '',
+								component: httpVueLoader('/components/user-dashboard.html')
+							},
+							{
+								path: 'form-builder',
+								component: httpVueLoader('/components/form-builder.html')
+							},
+							{
+								path: 'form-builder/:tableName',
+								component: httpVueLoader('/components/form-builder.html')
+							},
+							{
+								path: 'table/:tableName',
+								component: httpVueLoader('/components/search.html')
+							},
+							{
+								path: 'table/:tableName/add-record',
+								component: httpVueLoader('/components/add-record.html')
+							},
+							{
+								path: 'table/:tableName/permissions',
+								component: httpVueLoader('/components/permissions.html')
+							}
+						]
+					}]
+				})
+			});
+		</script>
+	</body>
+
+
+</html>
+
+<!--
+TODO :
+[ ] Approvals before entering information]
+[ ] Better session timeout, send authentication and authorization message failed and redirect to login page
+[ ] UI side set cookies and on logout remve cookies also. (remove go back from adding records) and handle case if cookies are disables and maintain a global vuex state so that every component should not suffer.
+[ ] Search filter, pagination, ordering
+[ ] Table manage permissions (add a role feeder in while global users can submit form but not see others' data)
+[ ] Record adding go back.
+[ ] Forms handle required fields, on form generator and also while filling forms.
+[ ] User change nav bar if user not logged in
+[ ] While Modifying form, restrict user to change datatype ie text can only be converted to text and so on.
+[ ] User nav bar table select set separator for otheruser's tables and his own tables.
+[ ] Map feature.
+[ ] Add logo
+[ ] Add other datatypes like rating and file (if possible)
+[ ] Registration using email id
+[ ] Forget password using email id
+[ ] Make UI mobile friendly
+[ ] adding records check all fields visibility on both ui and server side and add record check id field
+wpdb
+make primary keys whereever possible (composite key) because of the possibility of adding duplicate keys
+-->
